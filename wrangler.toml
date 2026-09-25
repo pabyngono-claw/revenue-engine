@@ -1,0 +1,10 @@
+name = "revenue-engine"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "RE_SESSIONS"
+id = "9c5b75d8212843f18e2712bd58d1699e"
+
+[ai]
+binding = "AI"

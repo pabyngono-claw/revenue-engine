@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Bundle</title>
+  </head>
+  <body>
+    <div id="root">ROOT HERE</div>
+    <script type="module" crossorigin src="/assets/index-Dju1dCrw.js"></script>
+    <script>
+      window.addEventListener('error', (e) => {
+        console.log('ERROR:', e.message, e.filename, e.lineno, e.colno, e.error?.stack);
+        document.body.innerHTML += '<pre style="color:red">' + e.message + '</pre>';
+      });
+      window.addEventListener('unhandledrejection', (e) => {
+        console.log('UNHANDLED REJECTION:', e.reason);
+        document.body.innerHTML += '<pre style="color:orange">' + e.reason + '</pre>';
+      });
+    </script>
+  </body>
+</html>

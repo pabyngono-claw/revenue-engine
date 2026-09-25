@@ -1,0 +1,14 @@
+{
+  "model": "claude-sonnet-4-6",
+  "max_tokens": 6000,
+  "system": "You are a market trend analyst. Suggest trending niches for a bootstrapped SaaS. JSON only.",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Search Google Trends, Exploding Topics, Product Hunt, Minea, and IndieHackers to find 5 trending niches RIGHT NOW that have strong monetization signals, growing communities, and are underserved by existing tools.\n\nReturn JSON: {\"niches\":[{\"niche\":\"short niche name e.g. AI resume builders\",\"why\":\"one sentence why it's hot right now\",\"signal\":\"the specific trending signal found\",\"monthlySearchGrowth\":\"e.g. +40% in 6 months\",\"competitionLevel\":\"low|medium|high\",\"estimatedRevenuePotential\":\"e.g. $50K-$200K/mo\"}]}\nReturn exactly 5 niches ordered by opportunity score."
+    }
+  ],
+  "mode": "hybrid",
+  "agentId": "suggest",
+  "useSearch": true
+}
