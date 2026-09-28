@@ -203,6 +203,8 @@ const RE_TOKEN = "British#1"
 
 
 
+const delay = (ms) => new Promise(r => setTimeout(r, ms));
+
 export default function App() {
   const [tab, setTab] = useState("agents");
   const [niche, setNiche] = useState("");
