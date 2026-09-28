@@ -8,3 +8,6 @@ id = "9c5b75d8212843f18e2712bd58d1699e"
 
 [ai]
 binding = "AI"
+
+[triggers]
+crons = ["0 7 * * 1"]
