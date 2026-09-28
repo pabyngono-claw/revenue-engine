@@ -1,0 +1,14 @@
+name = "revenue-engine-weekly"
+main = "functions/cron/weekly-research.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "RE_SESSIONS"
+id = "9c5b75d8212843f18e2712bd58d1699e"
+
+[triggers]
+crons = ["0 7 * * 1"]
+
+[[send_email]]
+name = "EMAIL"
+destination_address = "pabyngono@gmail.com"

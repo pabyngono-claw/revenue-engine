@@ -50,27 +50,47 @@ async function callAI(env, system, user, useSearch = false, agentId = "cron") {
 
 // ── Send email via Cloudflare Email Routing ───────────────────────────────────
 async function sendEmail(env, subject, htmlBody) {
+  // Save to KV — displayed as notification in platform
+  // and also attempt Cloudflare Email if domain is verified
   try {
-    const message = {
-      personalizations: [{ to: [{ email: REPORT_EMAIL }] }],
-      from: { email: "weekly@revenue-engine-aa1.pages.dev", name: "Revenue Engine" },
-      subject,
-      content: [{ type: "text/html", value: htmlBody }],
-    };
-
-    // Use Cloudflare Email Workers binding if available
-    if (env.EMAIL) {
-      await env.EMAIL.send(message);
-      return true;
-    }
-
-    // Fallback: save to KV so user can see it in platform
     const key = `re_email_${Date.now()}`;
-    await env.RE_SESSIONS.put(key, JSON.stringify({ subject, htmlBody, sentAt: new Date().toISOString() }), { expirationTtl: 604800 });
-    console.log(`Email saved to KV as ${key} (no EMAIL binding)`);
+    await env.RE_SESSIONS.put(key, JSON.stringify({
+      subject,
+      htmlBody,
+      sentAt: new Date().toISOString(),
+      to: REPORT_EMAIL,
+      read: false,
+    }), { expirationTtl: 604800 }); // 7 days
+    console.log(`[weekly-research] Report saved to KV: ${key}`);
+
+    // Also try sending via Resend API (free tier: 100 emails/day)
+    // Set RESEND_API_KEY as a Worker secret to enable real email
+    if (env.RESEND_API_KEY) {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Revenue Engine <onboarding@resend.dev>",
+          to: [REPORT_EMAIL],
+          subject,
+          html: htmlBody,
+        }),
+      });
+      if (res.ok) {
+        console.log("[weekly-research] Email sent via Resend ✅");
+      } else {
+        const err = await res.json();
+        console.log("[weekly-research] Resend error:", err.message);
+      }
+    } else {
+      console.log("[weekly-research] No RESEND_API_KEY — report saved to KV only");
+    }
     return true;
   } catch (e) {
-    console.error("Email error:", e.message);
+    console.error("sendEmail error:", e.message);
     return false;
   }
 }
