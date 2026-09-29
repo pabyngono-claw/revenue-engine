@@ -2040,7 +2040,7 @@ Return JSON: {
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: MUTED, marginBottom: 8 }}>Trending niches right now — click to select</div>
                 <div style={{ display: "grid", gap: 7 }}>
                   {suggestions.map((s, i) => (
-                    <button key={i} onClick={() => { setNiche(s.niche); setSuggestions([]); }} style={{ textAlign: "left", padding: "11px 14px", borderRadius: 9, border: `1px solid ${LINE}`, background: "#fff", cursor: "pointer", fontFamily: "inherit", transition: "border-color .2s" }}
+                    <button key={i} onClick={() => { setNiche(s.niche); }} style={{ textAlign: "left", padding: "11px 14px", borderRadius: 9, border: `1px solid ${LINE}`, background: "#fff", cursor: "pointer", fontFamily: "inherit", transition: "border-color .2s" }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = MONEY}
                       onMouseLeave={e => e.currentTarget.style.borderColor = LINE}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
