@@ -1997,7 +1997,7 @@ Return JSON: {
               )}
               <div style={{ display: "flex", gap: 7, marginBottom: 8 }}>
                 <div style={{fontSize:10,fontWeight:700,color:MUTED,textTransform:"uppercase",letterSpacing:".1em",marginBottom:8}}>Step 1 — Enter a product or niche to research</div>
-                <input value={niche} onChange={e => { setNiche(e.target.value); setSuggestions([]); }} onKeyDown={e => e.key === "Enter" && !running && run()}
+                <input value={niche} onChange={e => { setNiche(e.target.value); if (e.nativeEvent.inputType) setSuggestions([]); }} onKeyDown={e => e.key === "Enter" && !running && run()}
                   placeholder="e.g. AI resume builders, habit tracking apps, project management tools..."
                   style={{ flex: 1, padding: "12px 15px", fontSize: 13, border: `1px solid ${LINE}`, borderRadius: 8, background: "#fff", fontFamily: "inherit", outline: "none", color: INK }} />
                 {!running
