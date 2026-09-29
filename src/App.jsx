@@ -2038,6 +2038,15 @@ Return JSON: {
             {suggestions.length > 0 && (
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: MUTED, marginBottom: 8 }}>Trending niches right now — click to select</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, color: MUTED }}>{suggestions.length} niches found</span>
+                  {niche && (
+                    <button onClick={() => setNiche("")}
+                      style={{ fontSize: 11, padding: "4px 12px", borderRadius: 6, border: `1px solid ${LINE}`, background: "#fff", color: INK, cursor: "pointer", fontFamily: "inherit" }}>
+                      ✕ Clear: <strong>{niche}</strong>
+                    </button>
+                  )}
+                </div>
                 <div style={{ display: "grid", gap: 7 }}>
                   {suggestions.map((s, i) => (
                     <button key={i} onClick={() => { setNiche(s.niche); }} style={{ textAlign: "left", padding: "11px 14px", borderRadius: 9, border: `1px solid ${LINE}`, background: "#fff", cursor: "pointer", fontFamily: "inherit", transition: "border-color .2s" }}
