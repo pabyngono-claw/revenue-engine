@@ -590,6 +590,9 @@ const setR     = (id, d) => setResults(p => ({ ...p, [id]: d }));
 
   const suggestNiches = async () => {
     setSuggesting(true); setSuggestions([]);
+    // Temporarily force hybrid mode for suggest to ensure Anthropic fallback
+    const prevMode = localStorage.getItem("re_mode");
+    localStorage.setItem("re_mode", "hybrid");
     try {
       const data = await callAI(
         "You are a market trend analyst. Suggest trending niches across ALL business types: physical products (skincare, fashion, food, gadgets), digital products (templates, ebooks, courses, presets), info products (newsletters, communities, coaching), services (agencies, freelancing, consulting), mobile apps (iOS/Android utilities, productivity apps, lifestyle apps, games), web apps (SaaS tools, dashboards, marketplaces, booking platforms), and browser extensions. Include app ideas with clear monetization (subscription, one-time purchase, freemium, in-app purchases). JSON only.",
@@ -604,6 +607,7 @@ Return exactly 10 niches ordered by opportunity score.`, true, "suggest"
       );
       setSuggestions((data.niches || []).slice(0, 10));
     } catch (e) { setError("Could not fetch suggestions: " + e.message); }
+    if (prevMode) localStorage.setItem("re_mode", prevMode); else localStorage.removeItem("re_mode");
     setSuggesting(false);
   };
 
