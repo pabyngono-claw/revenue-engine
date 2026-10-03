@@ -1552,29 +1552,29 @@ Return JSON: {
       });
 
       await runAgent("frenchfit", isAgentEnabled("frenchfit"), async () => {
-        addLog("frenchfit", "Analysing French West Africa market fit...");
+        addLog("frenchfit", "Analysing French European market fit...");
         const ff = await callAI(
-          "You are the Francophone West Africa Market Analyst. Assess product-market fit for Senegal, Côte d'Ivoire, Mali, Cameroon, Guinea and wider ECOWAS. JSON only.",
-          `Analyse whether "${strategist?.name || niche}" will work in the French-speaking West African market (Senegal, Côte d'Ivoire, Cameroon, Mali, Guinea, Burkina Faso, Togo, Benin).
+          "You are the Francophone Europe Market Analyst. Assess product-market fit for France, Belgium, Switzerland, and Luxembourg. JSON only.",
+          `Analyse whether "${strategist?.name || niche}" will work in the French-speaking European market (France, Belgium, Switzerland, Luxembourg).
 
-Search: local Facebook groups, WhatsApp business usage, mobile money adoption (Wave, Orange Money), internet penetration data, local competitor research, Jumia West Africa, CoinAfrique, Expat Dakar, local entrepreneur communities.
+Search: French consumer forums, Reddit France, trustpilot.fr, Amazon.fr reviews, Fnac/Cdiscount listings, Google Trends France, Meta Ads France audience data, French e-commerce reports (FEVAD).
 
 Return JSON: {
   "overallFit": "excellent/good/moderate/poor",
   "fitScore": "score out of 10",
   "fitVerdict": "one sentence verdict",
   "marketSize": {
-    "totalAddrressableMarket": "estimated market size in FCFA and USD",
+    "totalAddrressableMarket": "estimated market size in EUR and USD",
     "primaryCountry": "best country to start in",
     "whyThisCountry": "specific reason",
     "internetUsers": "number with internet access in target market",
-    "mobileMoneyUsers": "number using Wave/Orange Money"
+    "onlineShoppers": "number of French online shoppers in this category"
   },
   "adaptationsRequired": [
     {
       "element": "what needs to change",
       "currentVersion": "how it is now",
-      "adaptedVersion": "how it should be for West Africa",
+      "adaptedVersion": "how it should be adapted for the French/European market",
       "reason": "why this matters locally",
       "effort": "easy/medium/hard"
     }
@@ -1592,20 +1592,20 @@ Return JSON: {
     "howToUseIt": "exact steps to use this channel",
     "alternativeChannels": ["channel 2", "channel 3"]
   },
-  "paymentMethods": ["Wave", "Orange Money", "PayPal", "card"],
+  "paymentMethods": ["Carte Bancaire", "PayPal", "Stripe", "Virement SEPA"],
   "languageStrategy": {
     "primaryLanguage": "French/Wolof/etc",
     "localExpressions": ["local phrase 1", "local phrase 2"],
     "contentTone": "how to sound local not foreign"
   },
   "pricingForMarket": {
-    "recommendedPriceXOF": "price in FCFA",
+    "recommendedPriceEUR": "price in EUR",
     "recommendedPriceUSD": "price in USD",
     "pricingRationale": "why this price works locally",
     "paymentPlan": "if needed — weekly/monthly installment option"
   },
   "quickWins": ["first thing to do in this market", "second quick win"],
-  "biggestRisk": "the #1 reason this could fail in West Africa",
+  "biggestRisk": "the #1 reason this could fail in the French/European market",
   "timeToFirstSale": "realistic time to first sale in this market"
 }`, true, "frenchfit");
         cap("frenchfit", ff);
@@ -4759,7 +4759,7 @@ function AgentOutput({ agent, data: d, isMobile }) {
     {d?.fitVerdict && <div style={{background:d?.overallFit==="excellent"||d?.overallFit==="good"?MONEY_BG:d?.overallFit==="moderate"?SIGNAL_BG:DANGER_BG,border:`1px solid ${d?.overallFit==="excellent"||d?.overallFit==="good"?MONEY:d?.overallFit==="moderate"?SIGNAL:DANGER}`,borderRadius:7,padding:"8px 12px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div>
-          <div style={{fontSize:10,fontWeight:700,color:d?.overallFit==="excellent"||d?.overallFit==="good"?MONEY:d?.overallFit==="moderate"?SIGNAL:DANGER}}>FRENCH WEST AFRICA FIT: {(d?.overallFit||"").toUpperCase()}</div>
+          <div style={{fontSize:10,fontWeight:700,color:d?.overallFit==="excellent"||d?.overallFit==="good"?MONEY:d?.overallFit==="moderate"?SIGNAL:DANGER}}>FRENCH EUROPEAN MARKET FIT: {(d?.overallFit||"").toUpperCase()}</div>
           <div style={{fontSize:13,fontWeight:700,color:INK,marginTop:2}}>{T(d.fitVerdict)}</div>
         </div>
         <div style={{fontSize:28,fontWeight:800,color:INK}}>{T(d?.fitScore)}/10</div>
@@ -4797,7 +4797,7 @@ function AgentOutput({ agent, data: d, isMobile }) {
     </div>}
     {d?.pricingForMarket && <div style={{border:`1px solid ${LINE}`,borderRadius:7,padding:"10px 12px",marginBottom:8,background:"#fff"}}>
       <div style={{fontSize:11,fontWeight:700,color:INK,marginBottom:6}}>LOCAL PRICING</div>
-      <div style={{fontSize:16,fontWeight:800,color:INK}}>{T(d.pricingForMarket.recommendedPriceXOF)} FCFA <span style={{fontSize:12,color:MUTED}}>({T(d.pricingForMarket.recommendedPriceUSD)})</span></div>
+      <div style={{fontSize:16,fontWeight:800,color:INK}}>{T(d.pricingForMarket.recommendedPriceEUR)} EUR <span style={{fontSize:12,color:MUTED}}>({T(d.pricingForMarket.recommendedPriceUSD)})</span></div>
       <div style={{fontSize:11,color:MUTED,marginTop:4}}>{T(d.pricingForMarket.pricingRationale)}</div>
     </div>}
     {d?.paymentMethods?.length > 0 && <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>

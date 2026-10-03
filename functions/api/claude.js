@@ -29,7 +29,13 @@ const json = (obj, status = 200) => new Response(JSON.stringify(obj), { status, 
 const safeId = (id) => typeof id === "string" && /^[a-zA-Z0-9_-]{1,64}$/.test(id);
 
 // Validate a learning-layer key to prevent arbitrary KV key writes.
-const safeLearningKey = (key) => typeof key === "string" && VALID_LEARNING_KEYS.has(key);
+const safeLearningKey = (key) => {
+  if (typeof key !== "string" || !key) return false;
+  if (VALID_LEARNING_KEYS.has(key)) return true;
+  // Dynamic cache keys: re_cache_<slug> where slug is alphanumeric + underscores, max 40 chars
+  if (/^re_cache_[a-z0-9_]{1,40}$/.test(key)) return true;
+  return false;
+};
 
 // Approximate byte size of a JSON-serializable value.
 const byteSize = (v) => {
