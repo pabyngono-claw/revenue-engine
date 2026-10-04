@@ -1684,7 +1684,7 @@ Return JSON: {
       addLog("psychol", `Mapping emotional triggers and buying psychology of "${niche}" users...`);
       addLog("psychol", "Analysing why people really buy — beyond features, into feelings...");
       const TARGET = results.scout?.products?.[0];
-      psychol = await callAI(
+      const psychol = await callAI(
         "You are the Customer Psychology Agent. Go beyond complaints into the emotional and psychological drivers of buying decisions. JSON only.",
         `Map the deep customer psychology for buyers in the "${niche}" market who use "${T?.name || "the competitor"}".
 
