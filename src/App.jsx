@@ -1723,6 +1723,55 @@ Return JSON: {
       setState("psychol", "done");
 
       await persist(R, "complete");
+// ── HERMES BRIDGE ─────────────────────────────────────────────────────────────
+{
+  const _bridgeScore = R.oppscore?.totalWeightedScore || 0;
+  if (!abort.current && _bridgeScore >= 65) {
+    (async () => {
+      try {
+        const _res = await fetch("https://re-hermes-bridge.info-news.workers.dev/trigger", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-re-bridge-token": "British#1",
+          },
+          body: JSON.stringify({
+            sessionId:     sid.current,
+            niche,
+            score:         _bridgeScore,
+            grade:         R.oppscore?.grade,
+            productType:   R.strategist?.businessModel || "unknown",
+            blueprintName: R.strategist?.name,
+            researchData: {
+              oppscore:   R.oppscore,
+              strategist: R.strategist,
+              scout:      R.scout,
+              analyst:    R.analyst,
+              pricing:    R.pricing,
+              distro:     R.distro,
+              execrisk:   R.execrisk,
+              marketing:  R.marketing,
+              seo:        R.seo,
+              forecast:   R.forecast,
+              frenchfit:  R.frenchfit,
+              mktcopy:    R.mktcopy,
+              psychol:    R.psychol,
+            },
+          }),
+        });
+        const _data = await _res.json().catch(() => ({}));
+        if (_data.triggered) {
+          addLog("oppscore", `✅ Hermes triggered (${_data.productType} pipeline) — score: ${_bridgeScore}/100`);
+        } else {
+          addLog("oppscore", `ℹ Hermes: ${_data.reason || _data.message || "no action"}`);
+        }
+      } catch (_err) {
+        addLog("oppscore", `⚠ Hermes bridge unreachable: ${_err.message}`);
+      }
+    })();
+  }
+}
+// ── END HERMES BRIDGE ─────────────────────────────────────────────────────────
       // #11: run finished — clear the active-run marker
       if (typeof localStorage !== "undefined") localStorage.removeItem("re_active_run");
       setSessions(await loadSessions());
