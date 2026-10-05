@@ -299,6 +299,8 @@ export default function App() {
     try { return !localStorage.getItem("re_visited"); } catch { return true; }
   });
   const [showGuide, setShowGuide] = useState(false);
+  const [hermesPipeline, setHermesPipeline] = useState(null);
+  const hermesPollingRef = useRef(null);
   const abort = useRef(false);
   const sid   = useRef(null);
   const statesRef = useRef({}); // mirror of states, for error-path inspection in catch
@@ -630,6 +632,32 @@ Return exactly 10 niches ordered by opportunity score.`, true, "suggest"
       await kvPost({ _saveLearning: true, _key: "re_tracker_v1", _learningData: data });
     } catch {}
   };
+
+  const BRIDGE_WORKER = "https://re-hermes-bridge.info-news.workers.dev";
+  const RE_BRIDGE_TOKEN = "British#1";
+
+  const startHermesPolling = (sessionId) => {
+    if (hermesPollingRef.current) clearInterval(hermesPollingRef.current);
+    setHermesPipeline({ ready: false, dispatched: true, sessionId, startedAt: Date.now() });
+    hermesPollingRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`${BRIDGE_WORKER}/pipeline/${sessionId}`, {
+          headers: { "x-re-bridge-token": RE_BRIDGE_TOKEN },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.ready) {
+          clearInterval(hermesPollingRef.current);
+          hermesPollingRef.current = null;
+          setHermesPipeline({ ...data, sessionId });
+        } else {
+          setHermesPipeline(prev => ({ ...prev, ...data, sessionId }));
+        }
+      } catch (e) { console.warn("[hermes-poll] fetch error:", e.message); }
+    }, 5000);
+  };
+
+  useEffect(() => () => { if (hermesPollingRef.current) clearInterval(hermesPollingRef.current); }, []);
 
   const buildTasksFromSession = (session) => {
     const res = session?.results || {};
@@ -1762,6 +1790,8 @@ Return JSON: {
         const _data = await _res.json().catch(() => ({}));
         if (_data.triggered) {
           addLog("oppscore", `✅ Hermes triggered (${_data.productType} pipeline) — score: ${_bridgeScore}/100`);
+          addLog("oppscore", `⏳ Polling for pipeline output every 5s…`);
+          startHermesPolling(sid.current);
         } else {
           addLog("oppscore", `ℹ Hermes: ${_data.reason || _data.message || "no action"}`);
         }
@@ -2312,6 +2342,91 @@ Return JSON: {
                 <button onClick={() => setTab("intel")} style={{ marginTop: 10, marginLeft: 8, padding: "8px 16px", background: "#fff", color: MONEY, border: `1px solid ${MONEY}`, borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 5 }}>View validation hub →</button>
               </div>
             )}
+
+        {/* ── Hermes Pipeline Results Panel ──────────────────────────── */}
+        {hermesPipeline && (
+          <div style={{marginTop:24,background:"#0f172a",border:"1px solid #1e3a5f",borderRadius:12,padding:20}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+              <span style={{fontSize:20}}>🤖</span>
+              <span style={{fontWeight:700,fontSize:15,color:"#e2e8f0"}}>Hermes Pipeline</span>
+              {!hermesPipeline.ready && (
+                <span style={{marginLeft:"auto",fontSize:12,color:"#94a3b8",display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{display:"inline-block",width:10,height:10,borderRadius:"50%",background:"#3b82f6",animation:"pulse 1.5s infinite"}}/>
+                  Running…
+                </span>
+              )}
+              {hermesPipeline.ready && (
+                <span style={{marginLeft:"auto",fontSize:12,color:"#22c55e",fontWeight:600}}>✅ Complete</span>
+              )}
+            </div>
+
+            {/* Skill chain progress */}
+            {hermesPipeline.skillChain?.length > 0 && (
+              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}}>
+                {hermesPipeline.skillChain.map((sk,i) => (
+                  <span key={i} style={{fontSize:11,padding:"2px 8px",borderRadius:20,
+                    background: hermesPipeline.ready ? "#14532d" : i===0 ? "#1e3a5f" : "#1e293b",
+                    color: hermesPipeline.ready ? "#86efac" : i===0 ? "#93c5fd" : "#64748b",
+                    border:`1px solid ${hermesPipeline.ready ? "#166534" : i===0 ? "#1d4ed8" : "#334155"}`}}>
+                    {hermesPipeline.ready ? "✓ " : i===0 ? "▶ " : ""}{sk}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Results when ready */}
+            {hermesPipeline.ready && hermesPipeline.output && (() => {
+              const o = hermesPipeline.output;
+              return (
+                <div style={{display:"flex",flexDirection:"column",gap:16}}>
+                  {/* Research brief */}
+                  {o.researchBrief && (
+                    <div style={{background:"#0f2744",borderRadius:8,padding:14}}>
+                      <div style={{fontSize:12,fontWeight:600,color:"#60a5fa",marginBottom:6}}>📋 Research Brief</div>
+                      <div style={{fontSize:13,color:"#cbd5e1",lineHeight:1.6,whiteSpace:"pre-wrap"}}>{o.researchBrief}</div>
+                    </div>
+                  )}
+
+                  {/* Product */}
+                  {(o.productName || o.tagline) && (
+                    <div style={{background:"#1a1033",borderRadius:8,padding:14}}>
+                      <div style={{fontSize:12,fontWeight:600,color:"#a78bfa",marginBottom:6}}>🏷 Product</div>
+                      {o.productName && <div style={{fontSize:16,fontWeight:700,color:"#e2e8f0"}}>{o.productName}</div>}
+                      {o.tagline && <div style={{fontSize:13,color:"#94a3b8",marginTop:4}}>{o.tagline}</div>}
+                      {o.features?.length > 0 && (
+                        <ul style={{marginTop:10,paddingLeft:18,color:"#cbd5e1",fontSize:13}}>
+                          {o.features.map((f,i) => <li key={i} style={{marginBottom:4}}>{f}</li>)}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Listing copy */}
+                  {o.listingCopy && (
+                    <div style={{background:"#0f2420",borderRadius:8,padding:14}}>
+                      <div style={{fontSize:12,fontWeight:600,color:"#34d399",marginBottom:6}}>📝 Listing Copy</div>
+                      <div style={{fontSize:13,color:"#cbd5e1",lineHeight:1.6,whiteSpace:"pre-wrap"}}>{typeof o.listingCopy === "string" ? o.listingCopy : JSON.stringify(o.listingCopy, null, 2)}</div>
+                    </div>
+                  )}
+
+                  {/* Raw JSON toggle */}
+                  <details style={{marginTop:4}}>
+                    <summary style={{fontSize:12,color:"#64748b",cursor:"pointer",userSelect:"none"}}>View raw output JSON</summary>
+                    <pre style={{marginTop:8,fontSize:11,color:"#475569",background:"#020817",borderRadius:6,padding:12,overflow:"auto",maxHeight:300}}>{JSON.stringify(hermesPipeline.output, null, 2)}</pre>
+                  </details>
+                </div>
+              );
+            })()}
+
+            {/* Waiting state */}
+            {!hermesPipeline.ready && (
+              <div style={{fontSize:13,color:"#64748b",fontStyle:"italic"}}>
+                Waiting for Hermes to complete the skill chain…
+                {hermesPipeline.startedAt && ` (${Math.floor((Date.now()-hermesPipeline.startedAt)/1000)}s elapsed)`}
+              </div>
+            )}
+          </div>
+        )}
           </div>
         )}
 
