@@ -2418,6 +2418,28 @@ Return JSON: {
               );
             })()}
 
+            {/* Live site card */}
+            {hermesPipeline.ready && hermesPipeline.output?.previewUrl && (
+              <a
+                href={hermesPipeline.output.previewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display:"flex",alignItems:"center",gap:10,marginTop:12,padding:"12px 16px",
+                  background:"linear-gradient(135deg,#0f4c2a,#14532d)",
+                  border:"1px solid #166534",borderRadius:8,textDecoration:"none",
+                  color:"#bbf7d0",fontWeight:600,fontSize:14,
+                  boxShadow:"0 0 12px rgba(34,197,94,0.15)"
+                }}
+              >
+                <span style={{fontSize:20}}>🚀</span>
+                <span style={{flex:1}}>Your site is live →</span>
+                <span style={{fontSize:11,color:"#86efac",fontWeight:400,wordBreak:"break-all"}}>
+                  {hermesPipeline.output.previewUrl}
+                </span>
+              </a>
+            )}
+
             {/* Waiting state */}
             {!hermesPipeline.ready && (
               <div style={{fontSize:13,color:"#64748b",fontStyle:"italic"}}>
