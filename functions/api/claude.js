@@ -20,7 +20,7 @@ const MAX_KV_PAYLOAD_BYTES = 1024 * 1024; // 1 MB per KV value (Cloudflare's rea
 const VALID_LEARNING_KEYS = new Set([
   "learning", "re_rerun_log_v1", "re_active_sources_v1", "re_custom_sources_v1",
   "re_outcomes_v1", "re_weights_v1", "re_custom_providers_v1",
-  "re_mrr_v1", "re_checklist_v1",
+  "re_mrr_v1", "re_checklist_v1", "re_tracker_v1",
 ]);
 
 const json = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: JSON_HEADERS });
