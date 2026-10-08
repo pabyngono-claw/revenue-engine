@@ -181,7 +181,7 @@ export async function onRequestPost(context) {
     async function callGemini(env, b) {
       const key = env.GEMINI_API_KEY;
       if (!key) throw new Error("GEMINI_API_KEY not configured");
-      const model = "gemini-3.6-flash";
+      const model = "gemini-2.0-flash";
       const contents = (b.messages || []).map(m => ({
         role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content || "" }],
