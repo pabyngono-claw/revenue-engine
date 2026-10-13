@@ -682,7 +682,7 @@ Return exactly 10 niches ordered by opportunity score.`, true, "suggest"
   };
 
   const BRIDGE_WORKER = "https://re-hermes-bridge.info-news.workers.dev";
-  const RE_BRIDGE_TOKEN = "NDqzP0rJf84mPC6nODfvqiI4sG9OSwzX3iEtNKrltZY";
+  const RE_BRIDGE_TOKEN = "British#1";
 
   const startHermesPolling = (sessionId) => {
     if (hermesPollingRef.current) clearInterval(hermesPollingRef.current);
