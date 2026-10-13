@@ -5,6 +5,7 @@ import { callAI } from "./ai.js";
 import { T, ScoreCard, GlobalStyle, Ring, BarRow, Chip, EmptyState, Metric, Section } from "./components/ui.jsx";
 import { OutcomeRow } from "./components/OutcomeRow.jsx";
 import { ProductTracker } from "./components/ProductTracker.jsx";
+import { LifecycleBoard } from "./components/LifecycleBoard.jsx";
 import { Search, TrendingUp, CheckCircle2, Circle, Loader2, AlertTriangle, AlertCircle, Users, Rocket, BarChart3, ArrowRight, RefreshCw, Play, Bot, ChevronDown, ChevronUp, Database, Trash2, PauseCircle, Globe, Settings , Target } from "lucide-react";
 
 // Error Boundary for catching render errors
@@ -221,6 +222,7 @@ export default function App() {
   const [mrrIn,   setMrrIn]   = useState("");
   const [sessions, setSessions] = useState([]);
   const [trackerData, setTrackerData] = useState({}); // { [sessionId]: { tasks, notes, revenue, status } }
+  const [lifecycleProducts, setLifecycleProducts] = useState([]); // manually managed products
   const [activeTrackerId, setActiveTrackerId] = useState(null);
   const [dbReady,  setDbReady]  = useState(false);
   const [suggesting, setSuggesting] = useState(false);
@@ -328,6 +330,7 @@ export default function App() {
     loadChecklist().then(d => setDone(d));
     // Load user-configured custom AI providers from KV (server-side)
     loadTrackerData();
+    loadLifecycleProducts();
     kvPost({ _loadLearning: true, _key: "re_custom_providers_v1" }).then(r => {
       const list = r?.learning;
       if (Array.isArray(list)) {
@@ -631,6 +634,51 @@ Return exactly 10 niches ordered by opportunity score.`, true, "suggest"
     try {
       await kvPost({ _saveLearning: true, _key: "re_tracker_v1", _learningData: data });
     } catch {}
+  };
+
+
+  // ── LIFECYCLE PRODUCTS ───────────────────────────────────────────────────────
+  const loadLifecycleProducts = async () => {
+    try {
+      const r = await kvPost({ _loadLearning: true, _key: "re_lifecycle_v1" });
+      if (r?.learning) setLifecycleProducts(r.learning);
+    } catch {}
+  };
+  const saveLifecycleProducts = async (products) => {
+    try {
+      await kvPost({ _saveLearning: true, _key: "re_lifecycle_v1", _learningData: products });
+    } catch {}
+  };
+  const addToLifecycle = (session) => {
+    if (lifecycleProducts.find(p => p.id === session.id)) return;
+    const LIFECYCLE_PHASES = [
+      { id: "validate", tasks: ["Confirm product exists on Gumroad/Etsy with active sales","Check pricing vs competitor","Map 3 competitor weaknesses to exploit","Get 10 people to say they'd pay","Verify you can legally sell this"] },
+      { id: "build",    tasks: ["Set up selling platform (Gumroad / Etsy / Shopify)","Create v1 of the product","Write product listing copy","Set up payment processing","Test the purchase flow end to end"] },
+      { id: "launch",   tasks: ["Post launch announcement in 3 communities","DM 20 warm contacts","Run first ad ($5/day test)","Collect first 3 testimonials","Fix #1 customer complaint"] },
+      { id: "scale",    tasks: ["Double budget on winning ad channel","Launch referral/affiliate program","Add upsell or bundle","Reach $5K MRR milestone","Document repeatable acquisition process"] },
+    ];
+    const allTasks = LIFECYCLE_PHASES.flatMap(ph =>
+      ph.tasks.map(label => ({ id: `${ph.id}_${label.slice(0,20).replace(/\s/g,"_")}`, label, done: false, phase: ph.id }))
+    );
+    const newProduct = {
+      id: session.id, niche: session.niche, score: session.nicheScore || session.score || 0,
+      addedDate: new Date().toLocaleDateString(), phase: "validate",
+      tasks: allTasks, weeklyRevenue: [], channels: [], notes: "",
+    };
+    const updated = [...lifecycleProducts, newProduct];
+    setLifecycleProducts(updated);
+    saveLifecycleProducts(updated);
+    setTab("portfolio");
+  };
+  const updateLifecycleProduct = (productId, updates) => {
+    const updated = lifecycleProducts.map(p => p.id === productId ? { ...p, ...updates } : p);
+    setLifecycleProducts(updated);
+    saveLifecycleProducts(updated);
+  };
+  const removeLifecycleProduct = (productId) => {
+    const updated = lifecycleProducts.filter(p => p.id !== productId);
+    setLifecycleProducts(updated);
+    saveLifecycleProducts(updated);
   };
 
   const BRIDGE_WORKER = "https://re-hermes-bridge.info-news.workers.dev";
@@ -1957,7 +2005,7 @@ Return JSON: {
         </div>
 
           <div role="tablist" aria-label="Main navigation" style={{ display: "flex", gap: 0, marginBottom: 20, borderBottom: `1px solid ${LINE}`, overflowX: "auto" }}>
-            {[["agents","1. Research",Bot],["intel","2. Intelligence",TrendingUp],["tracker","3. Tracker",Target],["dashboard","4. Dashboard",BarChart3],["history","History",Database],["sources","Sources",Globe]].map(([k,label,Icon]) => (
+            {[["agents","1. Research",Bot],["intel","2. Intelligence",TrendingUp],["tracker","3. Tracker",Target],["portfolio","Portfolio",Rocket],["dashboard","4. Dashboard",BarChart3],["history","History",Database],["sources","Sources",Globe]].map(([k,label,Icon]) => (
               <button role="tab" aria-selected={tab===k} key={k} onClick={() => setTab(k)} style={{ padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: isMobile?10:12, fontWeight: 600, color: tab === k ? INK : MUTED, borderBottom: tab === k ? `2px solid ${INK}` : "2px solid transparent", marginBottom: -1, display: "flex", alignItems: "center", gap: isMobile?3:5, fontFamily: "inherit", whiteSpace: "nowrap", padding: isMobile?"8px 8px":"10px 14px" }}>
               <Icon size={14} /> {label}
             </button>
@@ -2340,6 +2388,16 @@ Return JSON: {
                 )}
                 <button onClick={() => setTab("dashboard")} style={{ marginTop: 10, padding: "8px 16px", background: MONEY, color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 5 }}>Go to dashboard <ArrowRight size={12} /></button>
                 <button onClick={() => setTab("intel")} style={{ marginTop: 10, marginLeft: 8, padding: "8px 16px", background: "#fff", color: MONEY, border: `1px solid ${MONEY}`, borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 5 }}>View validation hub →</button>
+                {oppScore >= 60 && (() => {
+                  const currentSession = sessions[sessions.length - 1];
+                  const alreadyManaged = currentSession && lifecycleProducts.find(p => p.id === currentSession?.id);
+                  return currentSession ? (
+                    <button onClick={() => alreadyManaged ? setTab("portfolio") : addToLifecycle(currentSession)}
+                      style={{ marginTop: 10, marginLeft: 8, padding: "8px 16px", background: alreadyManaged ? "#fff" : INK, color: alreadyManaged ? INK : "#fff", border: `1px solid ${INK}`, borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                      {alreadyManaged ? "📦 In portfolio →" : "📦 + Manage this product"}
+                    </button>
+                  ) : null;
+                })()}
               </div>
             )}
 
@@ -3599,6 +3657,14 @@ Return JSON: {
                 )}
               </div>
             )}
+            {tab === "portfolio" && (
+              <LifecycleBoard
+                products={lifecycleProducts}
+                onUpdate={updateLifecycleProduct}
+                onRemove={removeLifecycleProduct}
+                setTab={setTab}
+              />
+            )}
             {tab === "history" && (
           <div>
             <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8,marginBottom:12 }}>
@@ -3666,6 +3732,15 @@ Return JSON: {
                   </div>
                   <div style={{ display: "flex", gap: 5 }}>
                     <button onClick={() => loadSession(s)} style={{ padding: "6px 12px", background: INK, color: "#fff", border: "none", borderRadius: 5, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Load</button>
+                    {s.status === "complete" && (() => {
+                      const alreadyManaged = lifecycleProducts.find(p => p.id === s.id);
+                      return (
+                        <button onClick={() => alreadyManaged ? setTab("portfolio") : addToLifecycle(s)}
+                          style={{ padding: "6px 10px", background: alreadyManaged ? MONEY_BG : "#fff", color: alreadyManaged ? MONEY : INK, border: `1px solid ${alreadyManaged ? MONEY : LINE}`, borderRadius: 5, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                          {alreadyManaged ? "📦 Managed" : "+ Manage"}
+                        </button>
+                      );
+                    })()}
                     <button onClick={async () => { await deleteSession(s.id); setSessions(await loadSessions()); }} style={{ padding: "6px 9px", background: "#fff", color: DANGER, border: `1px solid #F0B4B4`, borderRadius: 5, cursor: "pointer", display: "flex", alignItems: "center" }}><Trash2 size={12} /></button>
                   </div>
                 </div>
