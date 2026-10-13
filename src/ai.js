@@ -1,7 +1,7 @@
 // ── AI API wrapper ───────────────────────────────────────────
 import { kvPost } from "./api.js";
 
-const RE_TOKEN = "NDqzP0rJf84mPC6nODfvqiI4sG9OSwzX3iEtNKrltZY";
+const RE_TOKEN = "British#1";
 
 export async function callAI(system, user, useSearch, agentId = "util") {
   function extractAIJSON(text) {

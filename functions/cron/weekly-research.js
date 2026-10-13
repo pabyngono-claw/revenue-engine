@@ -8,7 +8,7 @@
  * 5. Saves results to KV
  */
 
-const RE_TOKEN = "NDqzP0rJf84mPC6nODfvqiI4sG9OSwzX3iEtNKrltZY";
+const RE_TOKEN = "British#1";
 const REPORT_EMAIL = "pabyngono@gmail.com";
 const PLATFORM_URL = "https://revenue-engine-aa1.pages.dev";
 

@@ -200,7 +200,7 @@ const ALL_SOURCES = [
 ];
 
 // ── KV-BACKED STORAGE — persists across sessions and devices ─────────────────
-const RE_TOKEN = "NDqzP0rJf84mPC6nODfvqiI4sG9OSwzX3iEtNKrltZY"
+const RE_TOKEN = "British#1"
 
 
 
@@ -1809,7 +1809,7 @@ Return JSON: {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-re-bridge-token": "NDqzP0rJf84mPC6nODfvqiI4sG9OSwzX3iEtNKrltZY",
+            "x-re-bridge-token": "British#1",
           },
           body: JSON.stringify({
             sessionId:     sid.current,
