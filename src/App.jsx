@@ -200,7 +200,7 @@ const ALL_SOURCES = [
 ];
 
 // ── KV-BACKED STORAGE — persists across sessions and devices ─────────────────
-const RE_TOKEN = "British#1"
+const RE_TOKEN = "NDqzP0rJf84mPC6nODfvqiI4sG9OSwzX3iEtNKrltZY"
 
 
 
@@ -682,14 +682,14 @@ Return exactly 10 niches ordered by opportunity score.`, true, "suggest"
   };
 
   const BRIDGE_WORKER = "https://re-hermes-bridge.info-news.workers.dev";
-  const RE_BRIDGE_TOKEN = "British#1";
+  const RE_BRIDGE_TOKEN = "NDqzP0rJf84mPC6nODfvqiI4sG9OSwzX3iEtNKrltZY";
 
   const startHermesPolling = (sessionId) => {
     if (hermesPollingRef.current) clearInterval(hermesPollingRef.current);
     setHermesPipeline({ ready: false, dispatched: true, sessionId, startedAt: Date.now() });
     hermesPollingRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`${BRIDGE_WORKER}/pipeline/${sessionId}`, {
+        const res = await fetch(`${BRIDGE_WORKER}/pipeline-poll?sessionId=${sessionId}`, {
           headers: { "x-re-bridge-token": RE_BRIDGE_TOKEN },
         });
         if (!res.ok) return;
@@ -1809,7 +1809,7 @@ Return JSON: {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-re-bridge-token": "British#1",
+            "x-re-bridge-token": "NDqzP0rJf84mPC6nODfvqiI4sG9OSwzX3iEtNKrltZY",
           },
           body: JSON.stringify({
             sessionId:     sid.current,
@@ -1817,6 +1817,7 @@ Return JSON: {
             score:         _bridgeScore,
             grade:         R.oppscore?.grade,
             productType:   R.strategist?.businessModel || "unknown",
+            businessModel: R.strategist?.businessModel || "",
             blueprintName: R.strategist?.name,
             researchData: {
               oppscore:   R.oppscore,
@@ -2477,9 +2478,9 @@ Return JSON: {
             })()}
 
             {/* Live site card */}
-            {hermesPipeline.ready && hermesPipeline.output?.previewUrl && (
+            {hermesPipeline.ready && (hermesPipeline.deployedUrl || hermesPipeline.output?.previewUrl) && (
               <a
-                href={hermesPipeline.output.previewUrl}
+                href={hermesPipeline.deployedUrl || hermesPipeline.output?.previewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -2493,7 +2494,7 @@ Return JSON: {
                 <span style={{fontSize:20}}>🚀</span>
                 <span style={{flex:1}}>Your site is live →</span>
                 <span style={{fontSize:11,color:"#86efac",fontWeight:400,wordBreak:"break-all"}}>
-                  {hermesPipeline.output.previewUrl}
+                  {hermesPipeline.deployedUrl || hermesPipeline.output?.previewUrl}
                 </span>
               </a>
             )}
